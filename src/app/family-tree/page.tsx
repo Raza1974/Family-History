@@ -28,8 +28,14 @@ export default function FamilyTree() {
     } else {
       setFamilyData(initialFamilyData)
     }
-    // Always save the merged or initial data back to localStorage
-    localStorage.setItem("familyData", JSON.stringify(familyData))
+  }, []) // Empty dependency array
+
+  const updateLocalStorage = (data: FamilyMember[]) => {
+    localStorage.setItem("familyData", JSON.stringify(data))
+  }
+
+  useEffect(() => {
+    updateLocalStorage(familyData)
   }, [familyData])
 
   const renderFamilyMember = (member: FamilyMember) => (
@@ -96,7 +102,7 @@ export default function FamilyTree() {
     if (window.confirm("Are you sure you want to delete this family member?")) {
       const updatedData = familyData.filter((member) => member.id !== id)
       setFamilyData(updatedData)
-      localStorage.setItem("familyData", JSON.stringify(updatedData))
+      updateLocalStorage(updatedData)
     }
   }
 
@@ -130,7 +136,10 @@ export default function FamilyTree() {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
         {familyData.map(renderFamilyMember)}
       </div>
-      <Link href="/" className="block mt-4 text-center bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
+      <Link
+        href="/"
+        className="block mt-4 text-center bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 cursor-pointer"
+      >
         Back to Home
       </Link>
     </div>
