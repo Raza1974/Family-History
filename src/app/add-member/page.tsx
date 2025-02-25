@@ -42,7 +42,7 @@ export default function AddMember() {
         }))
       }
     }
-  })
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

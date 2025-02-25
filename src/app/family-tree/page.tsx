@@ -16,8 +16,8 @@ export default function FamilyTree() {
     if (storedData) {
       const parsedData = JSON.parse(storedData)
       // Merge initial data with stored data, giving priority to stored data
-      const mergedData = [...initialFamilyData, ...parsedData].reduce((acc, current) => {
-        const x = acc.find((item: { id: any }) => item.id === current.id)
+      const mergedData = [...initialFamilyData, ...parsedData].reduce((acc: FamilyMember[], current: FamilyMember) => {
+        const x = acc.find((item) => item.id === current.id)
         if (!x) {
           return acc.concat([current])
         } else {
@@ -27,9 +27,10 @@ export default function FamilyTree() {
       setFamilyData(mergedData)
     } else {
       setFamilyData(initialFamilyData)
-      localStorage.setItem("familyData", JSON.stringify(initialFamilyData))
     }
-  }, [])
+    // Always save the merged or initial data back to localStorage
+    localStorage.setItem("familyData", JSON.stringify(familyData))
+  }, [familyData])
 
   const renderFamilyMember = (member: FamilyMember) => (
     <div key={member.id} className="family-member border p-2 m-1 rounded-lg shadow-md text-sm">

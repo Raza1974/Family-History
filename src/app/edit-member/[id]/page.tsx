@@ -11,7 +11,6 @@ import type { FamilyMember } from "../../types/FamilyMember"
 export default function EditMember({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [member, setMember] = useState<FamilyMember | null>(null)
-  const [familyData, setFamilyData] = useState<FamilyMember[]>([])
 
   useEffect(() => {
     const storedData = localStorage.getItem("familyData")
