@@ -5,8 +5,8 @@ import Link from "next/link"
 import type { FamilyMember } from "../types/FamilyMember"
 import { getFamilyData } from "../utils/localStorage"
 import { calculateAge, getAverageAge, getMostCommonOccupation } from "../utils/familyUtils"
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
+import { jsPDF } from "jspdf"
+import autoTable, { UserOptions } from "jspdf-autotable"
 
 export default function Report() {
   const [filteredData, setFilteredData] = useState<FamilyMember[]>([])
@@ -35,9 +35,11 @@ export default function Report() {
       head: [["Name", "Birth Date", "Age", "Generation", "Gender", "Occupation", "Education", "Notes"]],
       body: tableData,
       startY: 20,
-    })
+    } as UserOptions)
 
-    const startY = (doc as any).lastAutoTable.finalY + 10
+    const lastTable = (doc as any).lastAutoTable
+    const startY = lastTable ? lastTable.finalY + 10 : 30
+
     doc.text("Statistics", 14, startY)
     doc.text(`Total Members: ${filteredData.length}`, 14, startY + 10)
     doc.text(`Average Age: ${getAverageAge(filteredData)}`, 14, startY + 20)
@@ -56,7 +58,7 @@ export default function Report() {
   }
 
   return (
-    <div>
+    <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Family Tree Report</h2>
 
       <div className="mb-4 space-x-2 print:hidden">
@@ -67,6 +69,7 @@ export default function Report() {
           Download PDF
         </button>
       </div>
+
       <table className="w-full border-collapse border border-gray-300">
         <thead>
           <tr className="bg-gray-100">
@@ -82,7 +85,7 @@ export default function Report() {
         </thead>
         <tbody>
           {filteredData.map((member) => (
-            <tr key={member.id}>
+            <tr key={member.id} className="hover:bg-gray-100">
               <td className="border border-gray-300 p-2">{member.name}</td>
               <td className="border border-gray-300 p-2">{member.birthDate}</td>
               <td className="border border-gray-300 p-2">{calculateAge(member.birthDate, member.deathDate)}</td>
@@ -95,6 +98,7 @@ export default function Report() {
           ))}
         </tbody>
       </table>
+
       <div className="mt-4">
         <h3 className="text-xl font-bold mb-2">Statistics</h3>
         <p>Total Members: {filteredData.length}</p>
@@ -107,6 +111,7 @@ export default function Report() {
         <p>Generations: {new Set(filteredData.map((member) => member.generationNo)).size}</p>
         <p>Most Common Occupation: {getMostCommonOccupation(filteredData)}</p>
       </div>
+
       <Link
         href="/"
         className="block mt-4 text-center bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 print:hidden"
