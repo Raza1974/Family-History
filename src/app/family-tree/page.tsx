@@ -38,7 +38,9 @@ export default function FamilyTree() {
       {member.spouseId && <p className="text-xs">Spouse: {getFamilyMemberName(member.spouseId)}</p>}
       {member.siblings.length > 0 && <p className="text-xs">Siblings: {member.siblings.length}</p>}
       {member.children.length > 0 && <p className="text-xs">Children: {member.children.length}</p>}
-      <div className="mt-1 space-y-1">
+
+      {/* Hide buttons in print mode */}
+      <div className="mt-1 space-y-1 print:hidden">
         <Link
           href={`/edit-member/${member.id}`}
           className="block text-center bg-blue-500 text-white py-1 px-2 rounded text-xs hover:bg-blue-600"
@@ -81,7 +83,6 @@ export default function FamilyTree() {
   const handleDelete = (id: string) => {
     if (window.confirm("Are you sure you want to delete this family member?")) {
       const updatedData = familyData.filter((member) => member.id !== id)
-      setFamilyData(updatedData)
       setFamilyData(updatedData)
     }
   }
@@ -154,4 +155,3 @@ export default function FamilyTree() {
     </div>
   )
 }
-

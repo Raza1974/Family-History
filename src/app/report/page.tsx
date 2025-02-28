@@ -9,17 +9,10 @@ import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 
 export default function Report() {
-  const [familyData, setFamilyData] = useState<FamilyMember[]>([])
   const [filteredData, setFilteredData] = useState<FamilyMember[]>([])
-  const [filters, setFilters] = useState({
-    generation: "",
-    gender: "",
-    ageRange: "",
-  })
 
   useEffect(() => {
     const data = getFamilyData()
-    setFamilyData(data)
     setFilteredData(data)
   }, [])
 
@@ -44,7 +37,6 @@ export default function Report() {
       startY: 20,
     })
 
-    // Add statistics
     const startY = (doc as any).lastAutoTable.finalY + 10
     doc.text("Statistics", 14, startY)
     doc.text(`Total Members: ${filteredData.length}`, 14, startY + 10)
@@ -124,4 +116,3 @@ export default function Report() {
     </div>
   )
 }
-
