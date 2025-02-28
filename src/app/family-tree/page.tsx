@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -7,6 +6,9 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import type { FamilyMember } from "../types/FamilyMember"
 import { getFamilyData } from "../utils/localStorage"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+import "jspdf-autotable"
 
 export default function FamilyTree() {
   const [familyData, setFamilyData] = useState<FamilyMember[]>([])
@@ -101,37 +103,51 @@ export default function FamilyTree() {
     router.push(`/add-member?spouseId=${memberId}`)
   }
 
-  const handlePrint = () => {
-    window.print()
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF()
+    doc.text("Family Tree", 14, 15)
+
+    const tableData = familyData.map((member) => [
+      member.name,
+      member.birthDate,
+      member.gender,
+      member.occupation,
+      member.parentId || "N/A",
+      member.spouseId || "N/A",
+      member.children.length.toString(),
+      member.siblings.length.toString(),
+    ])
+
+    autoTable(doc, {
+      head: [["Name", "Birth Date", "Gender", "Occupation", "Parent ID", "Spouse ID", "Children", "Siblings"]],
+      body: tableData,
+      startY: 20,
+    })
+
+    doc.save("family_tree.pdf")
   }
 
-  const handleDownload = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(familyData))
-    const downloadAnchorNode = document.createElement("a")
-    downloadAnchorNode.setAttribute("href", dataStr)
-    downloadAnchorNode.setAttribute("download", "family_tree.json")
-    document.body.appendChild(downloadAnchorNode)
-    downloadAnchorNode.click()
-    downloadAnchorNode.remove()
+  const handlePrint = () => {
+    window.print()
   }
 
   return (
     <div className="family-tree p-4">
       <h2 className="text-2xl font-bold mb-4">Family Tree</h2>
-      <div className="mb-4 space-x-2">
+      <div className="mb-4 space-x-2 print:hidden">
         <button onClick={handlePrint} className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
           Print Family Tree
         </button>
-        <button onClick={handleDownload} className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-          Download Family Tree
+        <button onClick={handleDownloadPDF} className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600">
+          Download PDF
         </button>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 print:grid-cols-3">
         {familyData.map(renderFamilyMember)}
       </div>
       <Link
         href="/"
-        className="block mt-4 text-center bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 cursor-pointer"
+        className="block mt-4 text-center bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 cursor-pointer print:hidden"
       >
         Back to Home
       </Link>
