@@ -1,5 +1,5 @@
 export interface FamilyMember {
-  reasonOfDeath: any
+  reasonOfDeath?: string | null
   placeOfBurial: string
   id: string
   name: string
@@ -16,4 +16,3 @@ export interface FamilyMember {
   education: string
   notes: string
 }
-
