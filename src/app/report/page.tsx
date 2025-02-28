@@ -8,6 +8,11 @@ import { calculateAge, getAverageAge, getMostCommonOccupation } from "../utils/f
 import { jsPDF } from "jspdf"
 import autoTable, { UserOptions } from "jspdf-autotable"
 
+// Extend jsPDF to include lastAutoTable property
+interface jsPDFWithAutoTable extends jsPDF {
+  lastAutoTable?: { finalY: number }
+}
+
 export default function Report() {
   const [filteredData, setFilteredData] = useState<FamilyMember[]>([])
 
@@ -17,7 +22,7 @@ export default function Report() {
   }, [])
 
   const handleDownloadPDF = () => {
-    const doc = new jsPDF()
+    const doc: jsPDFWithAutoTable = new jsPDF()
     doc.text("Family Tree Report", 14, 15)
 
     const tableData = filteredData.map((member) => [
@@ -37,8 +42,9 @@ export default function Report() {
       startY: 20,
     } as UserOptions)
 
-    const lastTable = (doc as any).lastAutoTable
-    const startY = lastTable ? lastTable.finalY + 10 : 30
+    // Use our extended jsPDF type to access lastAutoTable safely
+    const lastTable = doc.lastAutoTable
+    const startY = lastTable?.finalY ? lastTable.finalY + 10 : 30
 
     doc.text("Statistics", 14, startY)
     doc.text(`Total Members: ${filteredData.length}`, 14, startY + 10)
