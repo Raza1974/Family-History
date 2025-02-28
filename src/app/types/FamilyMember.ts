@@ -1,4 +1,6 @@
 export interface FamilyMember {
+  reasonOfDeath: any
+  placeOfBurial: string
   id: string
   name: string
   birthDate: string

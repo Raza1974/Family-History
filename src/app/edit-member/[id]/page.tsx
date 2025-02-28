@@ -11,6 +11,8 @@ type FamilyMember = {
   name: string;
   birthDate: string;
   deathDate?: string;
+  reasonOfDeath?: string;
+  placeOfBurial?: string;
   generationNo: string;
   parentId?: string;
   spouseId?: string;
@@ -43,7 +45,7 @@ export default function EditMember() {
   const [member, setMember] = useState<FamilyMember | null>(null);
 
   useEffect(() => {
-    const familyData = getFamilyData(); // Fixed the prefer-const issue
+    const familyData = getFamilyData();
     const foundMember = familyData.find((m) => m.id === memberId);
     if (foundMember) {
       setMember(foundMember);
@@ -106,6 +108,14 @@ export default function EditMember() {
         <div>
           <label className="block font-medium">Death Date:</label>
           <input type="date" name="deathDate" value={member.deathDate || ""} onChange={handleChange} className="w-full border rounded p-2" />
+        </div>
+        <div>
+          <label className="block font-medium">Reason of Death:</label>
+          <input type="text" name="reasonOfDeath" value={member.reasonOfDeath || ""} onChange={handleChange} className="w-full border rounded p-2" />
+        </div>
+        <div>
+          <label className="block font-medium">Place of Burial:</label>
+          <input type="text" name="placeOfBurial" value={member.placeOfBurial || ""} onChange={handleChange} className="w-full border rounded p-2" />
         </div>
         <div>
           <label className="block font-medium">Generation Number:</label>

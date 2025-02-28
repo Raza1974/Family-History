@@ -34,15 +34,17 @@ export default function Report() {
       member.occupation,
       member.education,
       member.notes,
+      member.deathDate || "N/A",
+      member.reasonOfDeath ? member.reasonOfDeath : "N/A",
+      member.placeOfBurial || "N/A",
     ])
 
     autoTable(doc, {
-      head: [["Name", "Birth Date", "Age", "Generation", "Gender", "Occupation", "Education", "Notes"]],
+      head: [["Name", "Birth Date", "Age", "Generation", "Gender", "Occupation", "Education", "Notes", "Date of Death", "Reason of Death", "Place of Burial"]],
       body: tableData,
       startY: 20,
     } as UserOptions)
 
-    // Use our extended jsPDF type to access lastAutoTable safely
     const lastTable = doc.lastAutoTable
     const startY = lastTable?.finalY ? lastTable.finalY + 10 : 30
 
@@ -55,30 +57,21 @@ export default function Report() {
     doc.text(`  Other: ${filteredData.filter((member) => member.gender === "other").length}`, 14, startY + 60)
     doc.text(`Generations: ${new Set(filteredData.map((member) => member.generationNo)).size}`, 14, startY + 70)
     doc.text(`Most Common Occupation: ${getMostCommonOccupation(filteredData)}`, 14, startY + 80)
-
+    
     doc.save("family_tree_report.pdf")
-  }
-
-  const handlePrint = () => {
-    window.print()
   }
 
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Family Tree Report</h2>
-
       <div className="mb-4 space-x-2 print:hidden">
-        <button onClick={handlePrint} className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-          Print Report
-        </button>
-        <button onClick={handleDownloadPDF} className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600">
-          Download PDF
-        </button>
+        <button onClick={() => window.print()} className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">Print Report</button>
+        <button onClick={handleDownloadPDF} className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600">Download PDF</button>
       </div>
 
       <table className="w-full border-collapse border border-gray-300">
         <thead>
-          <tr className="bg-gray-100">
+          <tr className="bg-gray-300">
             <th className="border border-gray-300 p-2">Name</th>
             <th className="border border-gray-300 p-2">Birth Date</th>
             <th className="border border-gray-300 p-2">Age</th>
@@ -87,43 +80,31 @@ export default function Report() {
             <th className="border border-gray-300 p-2">Occupation</th>
             <th className="border border-gray-300 p-2">Education</th>
             <th className="border border-gray-300 p-2">Notes</th>
+            <th className="border border-gray-300 p-2">Date of Death</th>
+            <th className="border border-gray-300 p-2">Reason of Death</th>
+            <th className="border border-gray-300 p-2">Place of Burial</th>
           </tr>
         </thead>
         <tbody>
           {filteredData.map((member) => (
             <tr key={member.id} className="hover:bg-gray-100">
-              <td className="border border-gray-300 p-2">{member.name}</td>
-              <td className="border border-gray-300 p-2">{member.birthDate}</td>
-              <td className="border border-gray-300 p-2">{calculateAge(member.birthDate, member.deathDate)}</td>
-              <td className="border border-gray-300 p-2">{member.generationNo}</td>
-              <td className="border border-gray-300 p-2">{member.gender}</td>
-              <td className="border border-gray-300 p-2">{member.occupation}</td>
-              <td className="border border-gray-300 p-2">{member.education}</td>
-              <td className="border border-gray-300 p-2">{member.notes}</td>
+              <td className="border border-green-300 p-2">{member.name}</td>
+              <td className="border border-green-300 p-2">{member.birthDate}</td>
+              <td className="border border-green-300 p-2">{calculateAge(member.birthDate, member.deathDate)}</td>
+              <td className="border border-green-300 p-2">{member.generationNo}</td>
+              <td className="border border-green-300 p-2">{member.gender}</td>
+              <td className="border border-green-300 p-2">{member.occupation}</td>
+              <td className="border border-green-300 p-2">{member.education}</td>
+              <td className="border border-green-300 p-2">{member.notes}</td>
+              <td className="border border-green-300 p-2">{member.deathDate || "N/A"}</td>
+              <td className="border border-green-300 p-2">{member.reasonOfDeath || "N/A"}</td>
+              <td className="border border-green-300 p-2">{member.placeOfBurial || "N/A"}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <div className="mt-4">
-        <h3 className="text-xl font-bold mb-2">Statistics</h3>
-        <p>Total Members: {filteredData.length}</p>
-        <p>Average Age: {getAverageAge(filteredData)}</p>
-        <p>
-          Gender Distribution: Male: {filteredData.filter((member) => member.gender === "male").length} | Female:{" "}
-          {filteredData.filter((member) => member.gender === "female").length} | Other:{" "}
-          {filteredData.filter((member) => member.gender === "other").length}
-        </p>
-        <p>Generations: {new Set(filteredData.map((member) => member.generationNo)).size}</p>
-        <p>Most Common Occupation: {getMostCommonOccupation(filteredData)}</p>
-      </div>
-
-      <Link
-        href="/"
-        className="block mt-4 text-center bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 print:hidden"
-      >
-        Back to Home
-      </Link>
+      <Link href="/" className="block mt-4 text-center bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 print:hidden">Back to Home</Link>
     </div>
   )
 }
