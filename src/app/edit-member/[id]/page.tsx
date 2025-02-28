@@ -43,7 +43,7 @@ export default function EditMember() {
   const [member, setMember] = useState<FamilyMember | null>(null);
 
   useEffect(() => {
-    const familyData = getFamilyData();
+    const familyData = getFamilyData(); // Fixed the prefer-const issue
     const foundMember = familyData.find((m) => m.id === memberId);
     if (foundMember) {
       setMember(foundMember);
@@ -81,7 +81,7 @@ export default function EditMember() {
   const handleDelete = () => {
     if (!member) return;
 
-    let familyData = getFamilyData();
+    const familyData = getFamilyData();
     const updatedData = familyData.filter((m) => m.id !== member.id);
     setFamilyData(updatedData);
     router.push("/family-tree");

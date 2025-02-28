@@ -7,7 +7,7 @@ export const initialFamilyData: FamilyMember[] = [
     birthDate: "1950-01-01",
     deathDate: "",
     generationNo: 1,
-    image: "/placeholder.svg",
+    image: "/product-cover-5-3.jpg",
     parentId: "",
     spouseId: "2",
     siblings: [],

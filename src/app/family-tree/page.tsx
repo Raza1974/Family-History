@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import type { FamilyMember } from "../types/FamilyMember"
-import { getFamilyData } from "../utils/localStorage"
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
-import "jspdf-autotable"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import type { FamilyMember } from "../types/FamilyMember";
+import { getFamilyData, setFamilyData } from "../utils/localStorage";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import "jspdf-autotable";
 
 export default function FamilyTree() {
-  const [familyData, setFamilyData] = useState<FamilyMember[]>([])
-  const router = useRouter()
+  const [familyData, setFamilyDataState] = useState<FamilyMember[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
-    setFamilyData(getFamilyData())
-  }, [])
+    setFamilyDataState(getFamilyData());
+  }, []);
 
   const renderFamilyMember = (member: FamilyMember) => (
     <div key={member.id} className="family-member border p-2 m-1 rounded-lg shadow-md text-sm">
@@ -73,40 +73,41 @@ export default function FamilyTree() {
         </button>
       </div>
     </div>
-  )
+  );
 
   const getFamilyMemberName = (id: string) => {
-    const member = familyData.find((m) => m.id === id)
-    return member ? member.name : "Unknown"
-  }
+    const member = familyData.find((m) => m.id === id);
+    return member ? member.name : "Unknown";
+  };
 
   const handleDelete = (id: string) => {
     if (window.confirm("Are you sure you want to delete this family member?")) {
-      const updatedData = familyData.filter((member) => member.id !== id)
-      setFamilyData(updatedData)
+      const updatedData = familyData.filter((member) => member.id !== id);
+      setFamilyData(updatedData);
+      setFamilyDataState(updatedData);
     }
-  }
+  };
 
   const handleAddChild = (parentId: string) => {
-    router.push(`/add-member?parentId=${parentId}`)
-  }
+    router.push(`/add-member?parentId=${parentId}`);
+  };
 
   const handleAddSibling = (siblingId: string) => {
-    const sibling = familyData.find((member) => member.id === siblingId)
+    const sibling = familyData.find((member) => member.id === siblingId);
     if (sibling && sibling.parentId) {
-      router.push(`/add-member?parentId=${sibling.parentId}`)
+      router.push(`/add-member?parentId=${sibling.parentId}`);
     } else {
-      alert("Cannot add sibling: parent not found")
+      alert("Cannot add sibling: parent not found");
     }
-  }
+  };
 
   const handleAddSpouse = (memberId: string) => {
-    router.push(`/add-member?spouseId=${memberId}`)
-  }
+    router.push(`/add-member?spouseId=${memberId}`);
+  };
 
   const handleDownloadPDF = () => {
-    const doc = new jsPDF()
-    doc.text("Family Tree", 14, 15)
+    const doc = new jsPDF();
+    doc.text("Family Tree", 14, 15);
 
     const tableData = familyData.map((member) => [
       member.name,
@@ -117,20 +118,20 @@ export default function FamilyTree() {
       member.spouseId || "N/A",
       member.children.length.toString(),
       member.siblings.length.toString(),
-    ])
+    ]);
 
     autoTable(doc, {
       head: [["Name", "Birth Date", "Gender", "Occupation", "Parent ID", "Spouse ID", "Children", "Siblings"]],
       body: tableData,
       startY: 20,
-    })
+    });
 
-    doc.save("family_tree.pdf")
-  }
+    doc.save("family_tree.pdf");
+  };
 
   const handlePrint = () => {
-    window.print()
-  }
+    window.print();
+  };
 
   return (
     <div className="family-tree p-4">
@@ -153,5 +154,5 @@ export default function FamilyTree() {
         Back to Home
       </Link>
     </div>
-  )
+  );
 }
