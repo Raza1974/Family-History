@@ -5,7 +5,8 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import type { FamilyMember } from "../types/FamilyMember"
-import { initialFamilyData } from "../data/initialFamilyData"
+import { getFamilyData } from "../utils/localStorage"
+import { calculateAge, getAverageAge, getMostCommonOccupation } from "../utils/familyUtils"
 
 export default function Report() {
   const [familyData, setFamilyData] = useState<FamilyMember[]>([])
@@ -17,16 +18,9 @@ export default function Report() {
   })
 
   useEffect(() => {
-    const storedData = localStorage.getItem("familyData")
-    if (storedData) {
-      const parsedData = JSON.parse(storedData)
-      setFamilyData(parsedData)
-      setFilteredData(parsedData)
-    } else {
-      setFamilyData(initialFamilyData)
-      setFilteredData(initialFamilyData)
-      localStorage.setItem("familyData", JSON.stringify(initialFamilyData))
-    }
+    const data = getFamilyData()
+    setFamilyData(data)
+    setFilteredData(data)
   }, [])
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -57,38 +51,18 @@ export default function Report() {
     setFilteredData(result)
   }, [familyData, filters])
 
-  const calculateAge = (birthDate: string, deathDate?: string) => {
-    const birth = new Date(birthDate)
-    const death = deathDate ? new Date(deathDate) : new Date()
-    const age = death.getFullYear() - birth.getFullYear()
-    const monthDiff = death.getMonth() - birth.getMonth()
-    if (monthDiff < 0 || (monthDiff === 0 && death.getDate() < birth.getDate())) {
-      return age - 1
-    }
-    return age
-  }
-
   const handlePrint = () => {
     window.print()
   }
 
-  const getAverageAge = () => {
-    if (filteredData.length === 0) return 0
-    const totalAge = filteredData.reduce((sum, member) => sum + calculateAge(member.birthDate, member.deathDate), 0)
-    return (totalAge / filteredData.length).toFixed(1)
-  }
-
-  const getMostCommonOccupation = () => {
-    if (filteredData.length === 0) return "N/A"
-    const occupationCounts = filteredData.reduce(
-      (acc, member) => {
-        acc[member.occupation] = (acc[member.occupation] || 0) + 1
-        return acc
-      },
-      {} as Record<string, number>,
-    )
-    const sortedOccupations = Object.entries(occupationCounts).sort((a, b) => b[1] - a[1])
-    return sortedOccupations[0] ? sortedOccupations[0][0] : "N/A"
+  const handleDownload = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(filteredData))
+    const downloadAnchorNode = document.createElement("a")
+    downloadAnchorNode.setAttribute("href", dataStr)
+    downloadAnchorNode.setAttribute("download", "family_tree_report.json")
+    document.body.appendChild(downloadAnchorNode)
+    downloadAnchorNode.click()
+    downloadAnchorNode.remove()
   }
 
   return (
@@ -149,9 +123,14 @@ export default function Report() {
           </select>
         </div>
       </div>
-      <button onClick={handlePrint} className="mb-4 bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-        Print Report
-      </button>
+      <div className="mb-4 space-x-2">
+        <button onClick={handlePrint} className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+          Print Report
+        </button>
+        <button onClick={handleDownload} className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+          Download Report
+        </button>
+      </div>
       <table className="w-full border-collapse border border-gray-300">
         <thead>
           <tr className="bg-gray-100">
@@ -183,14 +162,14 @@ export default function Report() {
       <div className="mt-4">
         <h3 className="text-xl font-bold mb-2">Statistics</h3>
         <p>Total Members: {filteredData.length}</p>
-        <p>Average Age: {getAverageAge()}</p>
+        <p>Average Age: {getAverageAge(filteredData)}</p>
         <p>
           Gender Distribution: Male: {filteredData.filter((member) => member.gender === "male").length} | Female:{" "}
           {filteredData.filter((member) => member.gender === "female").length} | Other:{" "}
           {filteredData.filter((member) => member.gender === "other").length}
         </p>
         <p>Generations: {new Set(filteredData.map((member) => member.generationNo)).size}</p>
-        <p>Most Common Occupation: {getMostCommonOccupation()}</p>
+        <p>Most Common Occupation: {getMostCommonOccupation(filteredData)}</p>
       </div>
       <Link href="/" className="block mt-4 text-center bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
         Back to Home

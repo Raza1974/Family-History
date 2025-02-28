@@ -2,22 +2,22 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import Image from "next/image"
 import Link from "next/link"
+import Image from "next/image"
 import type { FamilyMember } from "../types/FamilyMember"
+import { getFamilyData, setFamilyData } from "../utils/localStorage"
 
 export default function AddMember() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const isInitialRender = useRef(true)
   const [member, setMember] = useState<FamilyMember>({
     id: Date.now().toString(),
     name: "",
     birthDate: "",
     deathDate: "",
-    generationNo: 0,
+    generationNo: 1,
     image: "",
     parentId: "",
     spouseId: "",
@@ -28,6 +28,8 @@ export default function AddMember() {
     education: "",
     notes: "",
   })
+
+  const isInitialRender = useRef(true)
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -44,13 +46,12 @@ export default function AddMember() {
     }
   }, [searchParams])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const existingData = localStorage.getItem("familyData")
-    const familyData = existingData ? JSON.parse(existingData) : []
+    const familyData = getFamilyData()
 
     // Update related family members
-    const updatedFamilyData = familyData.map((familyMember: FamilyMember) => {
+    const updatedFamilyData = familyData.map((familyMember) => {
       if (member.parentId && familyMember.id === member.parentId) {
         return { ...familyMember, children: [...familyMember.children, member.id] }
       }
@@ -65,25 +66,26 @@ export default function AddMember() {
 
     // Add the new member
     updatedFamilyData.push(member)
+    setFamilyData(updatedFamilyData)
 
-    localStorage.setItem("familyData", JSON.stringify(updatedFamilyData))
-
-    console.log("Member added:", member)
     router.push("/family-tree")
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setMember((prev) => {
-      if (name === "siblings" || name === "children") {
-        return { ...prev, [name]: value.split(",").map((item) => item.trim()) }
-      } else {
-        return { ...prev, [name]: value }
-      }
-    })
-  }
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+      const { name, value } = e.target
+      setMember((prev) => {
+        if (name === "siblings" || name === "children") {
+          return { ...prev, [name]: value.split(",").map((item) => item.trim()) }
+        } else {
+          return { ...prev, [name]: value }
+        }
+      })
+    },
+    [],
+  )
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       const reader = new FileReader()
@@ -92,7 +94,7 @@ export default function AddMember() {
       }
       reader.readAsDataURL(file)
     }
-  }
+  }, [])
 
   return (
     <div className="max-w-md mx-auto">

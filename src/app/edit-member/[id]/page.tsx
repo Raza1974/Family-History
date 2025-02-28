@@ -7,31 +7,26 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import type { FamilyMember } from "../../types/FamilyMember"
+import { getFamilyData, setFamilyData } from "../../utils/localStorage"
 
 export default function EditMember({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [member, setMember] = useState<FamilyMember | null>(null)
 
   useEffect(() => {
-    const storedData = localStorage.getItem("familyData")
-    if (storedData) {
-      const parsedData = JSON.parse(storedData)
-      const foundMember = parsedData.find((m: FamilyMember) => m.id === params.id)
-      if (foundMember) {
-        setMember(foundMember)
-      }
+    const familyData = getFamilyData()
+    const foundMember = familyData.find((m) => m.id === params.id)
+    if (foundMember) {
+      setMember(foundMember)
     }
   }, [params.id])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (member) {
-      const storedData = localStorage.getItem("familyData")
-      if (storedData) {
-        const familyData = JSON.parse(storedData)
-        const updatedData = familyData.map((m: FamilyMember) => (m.id === member.id ? member : m))
-        localStorage.setItem("familyData", JSON.stringify(updatedData))
-      }
+      const familyData = getFamilyData()
+      const updatedData = familyData.map((m) => (m.id === member.id ? member : m))
+      setFamilyData(updatedData)
       router.push("/family-tree")
     }
   }

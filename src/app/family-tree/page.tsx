@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -5,38 +6,15 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import type { FamilyMember } from "../types/FamilyMember"
-import { initialFamilyData } from "../data/initialFamilyData"
+import { getFamilyData } from "../utils/localStorage"
 
 export default function FamilyTree() {
   const [familyData, setFamilyData] = useState<FamilyMember[]>([])
   const router = useRouter()
 
   useEffect(() => {
-    const storedData = localStorage.getItem("familyData")
-    if (storedData) {
-      const parsedData = JSON.parse(storedData)
-      // Merge initial data with stored data, giving priority to stored data
-      const mergedData = [...initialFamilyData, ...parsedData].reduce((acc: FamilyMember[], current: FamilyMember) => {
-        const x = acc.find((item) => item.id === current.id)
-        if (!x) {
-          return acc.concat([current])
-        } else {
-          return acc
-        }
-      }, [])
-      setFamilyData(mergedData)
-    } else {
-      setFamilyData(initialFamilyData)
-    }
-  }, []) // Empty dependency array
-
-  const updateLocalStorage = (data: FamilyMember[]) => {
-    localStorage.setItem("familyData", JSON.stringify(data))
-  }
-
-  useEffect(() => {
-    updateLocalStorage(familyData)
-  }, [familyData])
+    setFamilyData(getFamilyData())
+  }, [])
 
   const renderFamilyMember = (member: FamilyMember) => (
     <div key={member.id} className="family-member border p-2 m-1 rounded-lg shadow-md text-sm">
@@ -102,7 +80,7 @@ export default function FamilyTree() {
     if (window.confirm("Are you sure you want to delete this family member?")) {
       const updatedData = familyData.filter((member) => member.id !== id)
       setFamilyData(updatedData)
-      updateLocalStorage(updatedData)
+      setFamilyData(updatedData)
     }
   }
 
@@ -127,12 +105,27 @@ export default function FamilyTree() {
     window.print()
   }
 
+  const handleDownload = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(familyData))
+    const downloadAnchorNode = document.createElement("a")
+    downloadAnchorNode.setAttribute("href", dataStr)
+    downloadAnchorNode.setAttribute("download", "family_tree.json")
+    document.body.appendChild(downloadAnchorNode)
+    downloadAnchorNode.click()
+    downloadAnchorNode.remove()
+  }
+
   return (
     <div className="family-tree p-4">
       <h2 className="text-2xl font-bold mb-4">Family Tree</h2>
-      <button onClick={handlePrint} className="mb-4 bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-        Print Family Tree
-      </button>
+      <div className="mb-4 space-x-2">
+        <button onClick={handlePrint} className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+          Print Family Tree
+        </button>
+        <button onClick={handleDownload} className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+          Download Family Tree
+        </button>
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
         {familyData.map(renderFamilyMember)}
       </div>
