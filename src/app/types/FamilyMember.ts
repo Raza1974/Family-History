@@ -1,5 +1,5 @@
 export interface FamilyMember {
-  reasonOfDeath: string | null; // Changed from `any` to `string | null`
+  reasonOfDeath: string | null;
   placeOfBurial: string;
   id: string;
   name: string;
